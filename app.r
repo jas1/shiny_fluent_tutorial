@@ -21,14 +21,26 @@ details_list_columns <- tibble(
   name = c("Sales rep", "Close date", "Amount", "Client", "City", "Is closed?"),
   key = fieldName)
 
+# adding filter component
+filters <- tagList(
+  DatePicker.shinyInput("fromDate", value = as.Date('2020/01/01'), label = "From date"),
+  DatePicker.shinyInput("toDate", value = as.Date('2020/12/31'), label = "To date")
+)
+
 ui <- fluentPage(
+  filters,
   uiOutput("analysis") # all the UI definition is on the server analysis component
 )
 
 server <- function(input, output, session) {
   
   filtered_deals <- reactive({
-    filtered_deals <- fluentSalesDeals %>% filter(is_closed > 0) # filtered deals.
+    req(input$fromDate) # added required filter
+    filtered_deals <- fluentSalesDeals %>% filter(
+      date >= input$fromDate,
+      date <= input$toDate,
+      is_closed > 0
+    )  
   })
   
   output$analysis <- renderUI({
