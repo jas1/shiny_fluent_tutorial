@@ -21,10 +21,59 @@ details_list_columns <- tibble(
   name = c("Sales rep", "Close date", "Amount", "Client", "City", "Is closed?"),
   key = fieldName)
 
-# adding filter component
-filters <- tagList(
-  DatePicker.shinyInput("fromDate", value = as.Date('2020/01/01'), label = "From date"),
-  DatePicker.shinyInput("toDate", value = as.Date('2020/12/31'), label = "To date")
+# 
+#' makeCard: title + content function
+#'
+#' @param title no default, text title
+#' @param content no default, content ui elements
+#' @param size default:12 , size of the container
+#' @param style default: "" style css
+#'
+#' @return
+#' @export
+#'
+#' @examples
+makeCard <- function(title, content, size = 12, style = "") {
+  div(
+    class = glue("card ms-depth-8 ms-sm{size} ms-xl{size}"),
+    style = style,
+    Stack(
+      tokens = list(childrenGap = 5),
+      Text(variant = "large", title, block = TRUE),
+      content
+    )
+  )
+}
+
+
+# adding  more filter components
+filters <- Stack(
+  tokens = list(childrenGap = 10),
+  Stack(
+    horizontal = TRUE,
+    tokens = list(childrenGap = 10),
+    DatePicker.shinyInput("fromDate", value = as.Date('2020/01/01'), label = "From date"),
+    DatePicker.shinyInput("toDate", value = as.Date('2020/12/31'), label = "To date")
+  ),
+  Label("Filter by sales reps", className = "my_class"),
+  NormalPeoplePicker.shinyInput(
+    "selectedPeople",
+    class = "my_class",
+    options = fluentPeople,
+    pickerSuggestionsProps = list(
+      suggestionsHeaderText = 'Matching people',
+      mostRecentlyUsedHeaderText = 'Sales reps',
+      noResultsFoundText = 'No results found',
+      showRemoveButtons = TRUE
+    )
+  ),
+  Slider.shinyInput("slider",
+                    value = 0, min = 0, max = 1000000, step = 100000,
+                    label = "Minimum amount",
+                    valueFormat = JS("function(x) { return '$' + x}"),
+                    snapToStep = TRUE
+  ),
+  Toggle.shinyInput("closedOnly", value = TRUE, label = "Include closed deals only?")
 )
 
 ui <- fluentPage(
@@ -35,12 +84,23 @@ ui <- fluentPage(
 server <- function(input, output, session) {
   
   filtered_deals <- reactive({
-    req(input$fromDate) # added required filter
-    filtered_deals <- fluentSalesDeals %>% filter(
-      date >= input$fromDate,
-      date <= input$toDate,
-      is_closed > 0
-    )  
+    req(input$fromDate) # required date
+    selectedPeople <- ( # selected or all
+      if (length(input$selectedPeople) > 0) input$selectedPeople
+      else fluentPeople$key
+    )
+    
+    minClosedVal <- if (isTRUE(input$closedOnly)) 1 else 0 #
+    
+    filtered_deals <- fluentSalesDeals %>%
+      filter(
+        rep_id %in% selectedPeople,
+        date >= input$fromDate,
+        date <= input$toDate,
+        deal_amount >= input$slider,
+        is_closed >= minClosedVal
+      ) %>%
+      mutate(is_closed = ifelse(is_closed == 1, "Yes", "No"))
   })
   
   output$analysis <- renderUI({
@@ -50,11 +110,7 @@ server <- function(input, output, session) {
       p("No matching transactions.")
     }
     
-    Stack(
-      tokens = list(childrenGap = 5),
-      Text(variant = "large", "Sales deals details", block = TRUE), # title
-      div(style="max-height: 500px; overflow: auto", items_list) # container with list or no results
-    )
+    makeCard("Top results", div(style="max-height: 500px; overflow: auto", items_list)) # refactored output
   })
 }
 
