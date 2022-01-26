@@ -1,15 +1,16 @@
-library("shiny") # install.packages("shiny")
+# tutorial reference ------------------------------------------------------
+# https://appsilon.github.io/shiny.fluent/articles/shiny-fluent.html
+# libraries ----------------------------------------------------------------
 # install.packages("remotes")
-# remotes::install_github("Appsilon/shiny.react")
-# remotes::install_github("Appsilon/shiny.fluent")
-library("shiny.fluent") # install.packages("shiny.fluent")
+# remotes::install_github("Appsilon/shiny.react") # dependency
+library("shiny") # install.packages("shiny")
+library("shiny.fluent") # remotes::install_github("Appsilon/shiny.fluent")
 library("dplyr") # install.packages("dplyr")
 library("ggplot2") # install.packages("ggplot2")
 library("glue") # install.packages("glue")
 library("leaflet") # install.packages("leaflet")
 library("plotly") # install.packages("plotly")
 library("sass") # install.packages("sass")
-
 library("shiny.router") # install.packages("shiny.router")
 
 
@@ -35,7 +36,7 @@ details_list_columns <- tibble(
 #' @param size default:12 , size of the container
 #' @param style default: "" style css
 #'
-#' @return
+#' @return a ui element
 #' @export
 #'
 #' @examples
