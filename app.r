@@ -75,6 +75,28 @@ makePage <- function (title, subtitle, contents) {
   contents)
 }
 
+header <- "header"
+navigation <- "navigation"
+footer <- "footer"
+
+#' layout: for transformin into a dashboard.
+#' warning: there are 3 globals invocations that are characters: header, navigation, footer
+#' they define the sections elements.
+#' 
+#' @param mainUI : the main UI of the app
+#'
+#' @return 
+#' @export
+#'
+#' @examples
+layout <- function(mainUI){
+  div(class = "grid-container",
+      div(class = "header", header),
+      div(class = "sidenav", navigation),
+      div(class = "main", mainUI),
+      div(class = "footer", footer)
+  )
+}
 
 # filter definition -------------------------------------------------------
 # adding  more filter components
@@ -107,6 +129,9 @@ filters <- Stack(
   Toggle.shinyInput("closedOnly", value = TRUE, label = "Include closed deals only?")
 )
 
+
+# analysis page definition ------------------------------------------------
+
 # refactored ui to page definition
 analysis_page <- makePage(
   "Sales representatives",
@@ -123,10 +148,10 @@ analysis_page <- makePage(
 )
 # ui definition -----------------------------------------------------------
 ui <- fluentPage(
-  
-  tags$style(".card { padding: 28px; margin-bottom: 28px; }"),# defined style
-  analysis_page # refactor previous UI to a page
-)
+  layout(analysis_page),
+  tags$head(
+    tags$link(href = "style.css", rel = "stylesheet", type = "text/css")
+  ))
 
 
 #  server definition ------------------------------------------------------
