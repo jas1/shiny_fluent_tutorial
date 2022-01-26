@@ -30,6 +30,10 @@ body {
   height: 44px;
 }
 
+.ms-xl12 {
+    width: 95%; /* fix width issue of scrolling */
+}
+
 /* container declarations ---------------------------------------------- */
 .grid-container {
   display: grid;

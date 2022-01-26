@@ -98,7 +98,7 @@ layout <- function(mainUI){
 # section definition ------------------------------------------------------
 
 
-# ui: header definition ---------------------------------------------------
+## ui: header definition ---------------------------------------------------
 
 header <- tagList(
   img(src = "logo.svg", class = "logo"),
@@ -119,7 +119,7 @@ header <- tagList(
     ),
     style = list(width = "100%")))
 
-# ui: navigation definition ---------------------------------------------------
+## ui: navigation definition ---------------------------------------------------
 
 navigation <- Nav(
   groups = list(
@@ -141,7 +141,7 @@ navigation <- Nav(
   )
 )
 
-# ui: footer definition ---------------------------------------------------
+## ui: footer definition ---------------------------------------------------
 
 footer <- Stack(
   horizontal = TRUE,
@@ -151,6 +151,31 @@ footer <- Stack(
   Text(variant = "medium", nowrap = FALSE, "If you'd like to learn more, reach out to us at hello@appsilon.com"),
   Text(variant = "medium", nowrap = FALSE, "All rights reserved.")
 )
+
+## ui: home page definition ----------------------------------------------------
+# 2 cards in the home page.
+
+card1 <- makeCard(
+  "Welcome to shiny.fluent demo!",
+  div(
+    Text("shiny.fluent is a package that allows you to build Shiny apps using Microsoft's Fluent UI."),
+    Text("Use the menu on the left to explore live demos of all available components.")
+  ))
+
+card2 <- makeCard(
+  "shiny.react makes it easy to use React libraries in Shiny apps.",
+  div(
+    Text("To make a React library convenient to use from Shiny, we need to write an R package that wraps it - for example, a shiny.fluent package for Microsoft's Fluent UI, or shiny.blueprint for Palantir's Blueprint.js."),
+    Text("Communication and other issues in integrating Shiny and React are solved and standardized in shiny.react package."),
+    Text("shiny.react strives to do as much as possible automatically, but there's no free lunch here, so in all cases except trivial ones you'll need to do some amount of manual work. The more work you put into a wrapper package, the less work your users will have to do while using it.")
+  ))
+
+home_page <- makePage(
+  "This is a Fluent UI app built in Shiny",
+  "shiny.react + Fluent UI = shiny.fluent",
+  div(card1, card2)
+)
+
 
 
 ## filter definition -------------------------------------------------------
@@ -185,7 +210,7 @@ filters <- Stack(
 )
 
 
-## analysis page definition ------------------------------------------------
+## ui: analysis page definition ------------------------------------------------
 
 ## refactored ui to page definition
 analysis_page <- makePage(
@@ -201,9 +226,21 @@ analysis_page <- makePage(
     uiOutput("analysis")
   )
 )
+
+# Add shiny.router dependencies manually: they are not picked up because they're added in a non-standard way.
+shiny::addResourcePath("shiny.router", system.file("www", package = "shiny.router"))
+shiny_router_js_src <- file.path("shiny.router", "shiny.router.js")
+shiny_router_script_tag <- shiny::tags$script(type = "text/javascript", src = shiny_router_js_src)
+
+# ui: routes definition ---------------------------------------------------
+
+router <- make_router(
+  route("/", home_page),
+  route("other", analysis_page))
+
 # ui definition -----------------------------------------------------------
 ui <- fluentPage(
-  layout(analysis_page),
+  layout(router$ui),
   tags$head(
     tags$link(href = "style.css", rel = "stylesheet", type = "text/css")
   ))
@@ -212,6 +249,7 @@ ui <- fluentPage(
 #  server definition ------------------------------------------------------
 server <- function(input, output, session) {
   
+  router$server(input, output, session)
 # filtered data ------------------------------------------------------  
   filtered_deals <- reactive({
     req(input$fromDate) # required date
