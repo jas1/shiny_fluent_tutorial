@@ -11,10 +11,39 @@ library("plotly") # install.packages("plotly")
 library("sass") # install.packages("sass")
 
 library("shiny.router") # install.packages("shiny.router")
+
+# definition of columns for the DetailsList
+# field name matches the DF names
+# name matches the name displayed
+# key looks like the "i18n key" 
+details_list_columns <- tibble(
+  fieldName = c("rep_name", "date", "deal_amount", "client_name", "city", "is_closed"),
+  name = c("Sales rep", "Close date", "Amount", "Client", "City", "Is closed?"),
+  key = fieldName)
+
 ui <- fluentPage(
-  Text(variant = "xxLarge", "Hello world!")
+  uiOutput("analysis") # all the UI definition is on the server analysis component
 )
 
-server <- function(input, output, session) {}
+server <- function(input, output, session) {
+  
+  filtered_deals <- reactive({
+    filtered_deals <- fluentSalesDeals %>% filter(is_closed > 0) # filtered deals.
+  })
+  
+  output$analysis <- renderUI({
+    items_list <- if(nrow(filtered_deals()) > 0){
+      DetailsList(items = filtered_deals(), columns = details_list_columns)
+    } else {
+      p("No matching transactions.")
+    }
+    
+    Stack(
+      tokens = list(childrenGap = 5),
+      Text(variant = "large", "Sales deals details", block = TRUE), # title
+      div(style="max-height: 500px; overflow: auto", items_list) # container with list or no results
+    )
+  })
+}
 
 shinyApp(ui, server)
