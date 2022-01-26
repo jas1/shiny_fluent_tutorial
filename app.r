@@ -51,8 +51,6 @@ makeCard <- function(title, content, size = 12, style = "") {
   )
 }
 
-
-
 # filter definition -------------------------------------------------------
 # adding  more filter components
 filters <- Stack(
@@ -86,7 +84,13 @@ filters <- Stack(
 
 # ui definition -----------------------------------------------------------
 ui <- fluentPage(
-  filters,
+  
+  tags$style(".card { padding: 28px; margin-bottom: 28px; }"),# defined style
+  Stack(
+    tokens = list(childrenGap = 10), horizontal = TRUE,
+    makeCard("Filters", filters, size = 4, style = "max-height: 320px"), # filters card
+    makeCard("Deals count", plotlyOutput("plot"), size = 8, style = "max-height: 320px") # deal count card
+  ),
   uiOutput("analysis") # all the UI definition is on the server analysis component
 )
 
@@ -94,6 +98,7 @@ ui <- fluentPage(
 #  server definition ------------------------------------------------------
 server <- function(input, output, session) {
   
+# filtered data ------------------------------------------------------  
   filtered_deals <- reactive({
     req(input$fromDate) # required date
     selectedPeople <- ( # selected or all
@@ -113,15 +118,39 @@ server <- function(input, output, session) {
       ) %>%
       mutate(is_closed = ifelse(is_closed == 1, "Yes", "No"))
   })
+
+# output map ------------------------------------------------------    
+  output$map <- renderLeaflet({
+    points <- cbind(filtered_deals()$LONGITUDE, filtered_deals()$LATITUDE)
+    leaflet() %>%
+      addProviderTiles(providers$Stamen.TonerLite, options = providerTileOptions(noWrap = TRUE)) %>%
+      addMarkers(data = points)
+  })
+
+# output plot ------------------------------------------------------  
+  output$plot <- renderPlotly({
+    p <- ggplot(filtered_deals(), aes(x = rep_name)) +
+      geom_bar(fill = unique(filtered_deals()$color)) +
+      ylab("Number of deals") +
+      xlab("Sales rep") +
+      theme_light()
+    ggplotly(p, height = 300)
+  })  
   
+
+# output analysis UI ------------------------------------------------------
   output$analysis <- renderUI({
     items_list <- if(nrow(filtered_deals()) > 0){
       DetailsList(items = filtered_deals(), columns = details_list_columns)
     } else {
       p("No matching transactions.")
     }
-    
-    makeCard("Top results", div(style="max-height: 500px; overflow: auto", items_list)) # refactored output
+
+    Stack(
+      tokens = list(childrenGap = 10), horizontal = TRUE,
+      makeCard("Top results", div(style="max-height: 500px; overflow: auto", items_list)), # refactored output
+      makeCard("Map", leafletOutput("map")) # map definition
+    )
   })
 }
 
