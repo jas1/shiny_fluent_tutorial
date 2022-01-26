@@ -17,6 +17,19 @@ body {
   background-clip: padding-box;
 }
 
+
+.title {
+  padding: 0px 14px 0px 14px;
+  color: #737373;
+  margin: 6px 0px 6px 10px;
+  border-left: 1px solid darkgray;
+  width: 220px;
+}
+
+.logo {
+  height: 44px;
+}
+
 /* container declarations ---------------------------------------------- */
 .grid-container {
   display: grid;
