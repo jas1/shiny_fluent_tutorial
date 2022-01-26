@@ -12,6 +12,9 @@ library("sass") # install.packages("sass")
 
 library("shiny.router") # install.packages("shiny.router")
 
+
+#  globals definitions ----------------------------------------------------
+
 # definition of columns for the DetailsList
 # field name matches the DF names
 # name matches the name displayed
@@ -20,6 +23,9 @@ details_list_columns <- tibble(
   fieldName = c("rep_name", "date", "deal_amount", "client_name", "city", "is_closed"),
   name = c("Sales rep", "Close date", "Amount", "Client", "City", "Is closed?"),
   key = fieldName)
+
+
+# functions definitions ---------------------------------------------------
 
 # 
 #' makeCard: title + content function
@@ -46,6 +52,8 @@ makeCard <- function(title, content, size = 12, style = "") {
 }
 
 
+
+# filter definition -------------------------------------------------------
 # adding  more filter components
 filters <- Stack(
   tokens = list(childrenGap = 10),
@@ -76,11 +84,14 @@ filters <- Stack(
   Toggle.shinyInput("closedOnly", value = TRUE, label = "Include closed deals only?")
 )
 
+# ui definition -----------------------------------------------------------
 ui <- fluentPage(
   filters,
   uiOutput("analysis") # all the UI definition is on the server analysis component
 )
 
+
+#  server definition ------------------------------------------------------
 server <- function(input, output, session) {
   
   filtered_deals <- reactive({
