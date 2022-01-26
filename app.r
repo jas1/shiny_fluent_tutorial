@@ -1,5 +1,7 @@
 # tutorial reference ------------------------------------------------------
-# https://appsilon.github.io/shiny.fluent/articles/shiny-fluent.html
+# part 1: https://appsilon.github.io/shiny.fluent/articles/shiny-fluent.html
+# part 2: https://appsilon.com/shiny-fluent-tutorial/
+
 # libraries ----------------------------------------------------------------
 # install.packages("remotes")
 # remotes::install_github("Appsilon/shiny.react") # dependency
@@ -52,6 +54,28 @@ makeCard <- function(title, content, size = 12, style = "") {
   )
 }
 
+#' makePage for creating a shiny dashboard page.
+#'
+#' @param title no default, title of page . 
+#' @param subtitle no default, subtitle of page
+#' @param contents  no default, ui contents of page
+#'
+#' @return
+#' @export
+#'
+#' @examples
+makePage <- function (title, subtitle, contents) {
+  tagList(div(
+    class = "page-title",
+    span(title, class = "ms-fontSize-32 ms-fontWeight-semibold", style =
+           "color: #323130"),
+    span(subtitle, class = "ms-fontSize-14 ms-fontWeight-regular", style =
+           "color: #605E5C; margin: 14px;")
+  ),
+  contents)
+}
+
+
 # filter definition -------------------------------------------------------
 # adding  more filter components
 filters <- Stack(
@@ -83,16 +107,25 @@ filters <- Stack(
   Toggle.shinyInput("closedOnly", value = TRUE, label = "Include closed deals only?")
 )
 
+# refactored ui to page definition
+analysis_page <- makePage(
+  "Sales representatives",
+  "Best performing reps",
+  div(
+    Stack(
+      horizontal = TRUE,
+      tokens = list(childrenGap = 10),
+      makeCard("Filters", filters, size = 4, style = "max-height: 320px"),
+      makeCard("Deals count", plotlyOutput("plot"), size = 8, style = "max-height: 320px")
+    ),
+    uiOutput("analysis")
+  )
+)
 # ui definition -----------------------------------------------------------
 ui <- fluentPage(
   
   tags$style(".card { padding: 28px; margin-bottom: 28px; }"),# defined style
-  Stack(
-    tokens = list(childrenGap = 10), horizontal = TRUE,
-    makeCard("Filters", filters, size = 4, style = "max-height: 320px"), # filters card
-    makeCard("Deals count", plotlyOutput("plot"), size = 8, style = "max-height: 320px") # deal count card
-  ),
-  uiOutput("analysis") # all the UI definition is on the server analysis component
+  analysis_page # refactor previous UI to a page
 )
 
 
