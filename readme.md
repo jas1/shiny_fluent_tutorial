@@ -1,10 +1,10 @@
 # shiny fluent tutorial
 
-to get closer to the library.
+to get closer to the library. added commits after each step. 
 
-followed 1st tutorial: 
+2 tutorials inside this repo:
 
-https://appsilon.github.io/shiny.fluent/articles/shiny-fluent.html
+part 1: https://appsilon.github.io/shiny.fluent/articles/shiny-fluent.html
 
-added commits after each step. 
+part 2: https://appsilon.com/shiny-fluent-tutorial/
 
